@@ -5,7 +5,7 @@ sidebar_label: Backup and Restore
 ---
 ------
 
-This document contains quick reference of the installation steps for both OpenEBS and heptio Ark which can be used for taking backup of OpenEBS volumes and then restoration of the data whenever it needed.
+This document is a quick reference of the installation steps for both OpenEBS and Heptio Ark which can be used for taking backups of OpenEBS volumes and then restoration of the data.
 
 
 
@@ -18,13 +18,13 @@ This document contains quick reference of the installation steps for both OpenEB
 
 
 - Mount propagation feature has to be enabled on Kubernetes, otherwise the data written from the pods
-  will not visible in the restic daemonset pod on the same node.
+  will not visible in the Restic daemonset pod on the same node.
   
 - Latest tested Velero version is 0.11.0.
   
 - Create required storage provider configuration to store the backup data.
 
-- Create required OpenEBS storage pools and  storage classes .
+- Create required OpenEBS storage pools and storage classes.
 
   
 
@@ -38,9 +38,9 @@ At the end of Velero setup, Restic will be successfully running and ready for ta
 
 ## Steps for backup
 
-If you have configured Velero with restic then `velero backup` command invokes restic internally and copies the data from the given application including the entire data from the associated persistent volumes in that application and backs it up to the configured storage location such as S3 or <a href="/docs/next/minio.html" target="_blank">Minio</a>. 
+If you have configured Velero with Restic then `velero backup` command invokes Restic internally and copies the data from the given application including the entire data from the associated persistent volumes in that application and backs it up to the configured storage location such as S3 or <a href="/docs/next/minio.html" target="_blank">Minio</a>. 
 
-If you are using OpenEBS velero-plugin then `velero backup` command invokes velero-plugin internally and takes a snapshot of CStor volume data and send it to remote storage location as mentioned in  *volumesnapshotlocation*.
+If you are using OpenEBS velero-plugin then `velero backup` command invokes velero-plugin internally and takes a snapshot of CStor volume data and sends it to remote storage location as mentioned in  *volumesnapshotlocation*.
 
 <h3><a class="anchor" aria-hidden="true" id="Configure-Volumesnapshotlocation"></a>Configure Volumesnapshotlocation</h3>
 
@@ -80,15 +80,15 @@ Once the backup is completed you should see the backup marked as `Completed`.
 
 ## Steps for Restore
 
-Velero backup can be restored onto a new cluster or to the same cluster. An OpenEBS PVC *with the same name as the original PVC* needs to be created and made available before the restore command is performed. The target cluster OpenEBS EBS PVC can be from a different StorageClass and cStorPool, but only the PVC name has to be same.
+Velero backups can be restored onto a new cluster or to the same cluster. An OpenEBS PVC *with the same name as the original PVC* needs to be created and made available before the restore command is performed. The target cluster OpenEBS EBS PVC can be from a different StorageClass and cStorPool, however the PVC name has to be same.
 
-If you are doing restore of cStor volume using OpenEBS velero-plugin, then you must need to create the same namespace and StorageClass configuration of the source PVC first in your target cluster. On the target cluster, restore the application using the below command
+If you are doing a restore of cStor volume using OpenEBS velero-plugin, then you must create the same namespace and StorageClass configuration of the source PVC first in your target cluster. On the target cluster, restore the application using the below command
 
 ```
 velero restore create <restore-name> --from-backup <backup-name> -restore-volumes=true -l app=<app-label-selector> 
 ```
 
-With above command, velero plugin will create a cStor volume and the data from backup will be restored on this newly created volume.
+With the above command, the Velero plugin will create a cStor volume and the data from backup will be restored on this newly created volume.
 
 **Note**: You need to mention `--restore-volumes=true` while doing a restore.
 
@@ -113,7 +113,7 @@ Once the restore is completed to the PVC, attach the PVC to the target applicati
 
 Using `velero schedule` command, periodic backups are taken. 
 
-In case of velero-plugin, this periodic backups are incremental backups which saves storage space and backup time. To restore periodic backup with velero-plugin, refer [here](https://github.com/openebs/velero-plugin/blob/v0.9.x/README.md) for more details. The following command will schedule the backup as per the cron time mentioned .
+In case of velero-plugin, these periodic backups are incremental backups which save storage space and backup time as compared to full copies. To restore periodic backup with velero-plugin, refer [here](https://github.com/openebs/velero-plugin/blob/v0.9.x/README.md) for more details. The following command will schedule the backup as per the cron time mentioned .
 
 ```
 velero schedule create <backup-schedule-name> --schedule "0 * * * *" --snapshot-volumes volume-snapshot-locations=<SNAPSHOT_LOCATION> -l app=<app-label-selector>
@@ -131,7 +131,7 @@ During the first backup iteration of a schedule, full data of the volume will be
 
 <h3><a class="anchor" aria-hidden="true" id="To-restore-from-a-schedule"></a>Restore from a schedule</h3>
 
-Since backups taken are incremental for a schedule, order of restoring data is important. You need to restore data in the order of the backups created.
+Since incremental backups are taken via a schedule, the order of restoring data is important. You need to restore data in the order of the backups created.
 
 For example, below are the available backups for a schedule:
 
@@ -142,7 +142,7 @@ sched-20190513103534   Completed   2019-05-13 16:05:34 +0530 IST   29d       gcp
 sched-20190513103034   Completed   2019-05-13 16:00:34 +0530 IST   29d       gcp                <none>
 ```
 
-Restore of data need to be done in following way:
+The restoration of data should be done in the following way:
 
 ```
 velero restore create --from-backup sched-20190513103034 --restore-volumes=true
@@ -156,7 +156,7 @@ velero restore create --from-backup sched-20190513104034 --restore-volumes=true
 
 **Support for more backup storage location**
 
-Current velero-plugin supports S3 and GCP backup storage location only. Support for other storage location is planned in the future release.
+Current Velero-plugin supports S3 and GCP backup storage location only. Support for other storage locations is planned in the future release.
 
 <br>
 
